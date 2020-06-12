@@ -1,44 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using DevMath;
 using UnityEngine;
+using Matrix4x4 = UnityEngine.Matrix4x4;
+using Vector2 = DevMath.Vector2;
 
-public class Enemy
-{
+public class Enemy {
     private const float CHASE_DISTANCE = 250.0f;
     private readonly float moveSpeed = 300.0f;
 
-    private Texture2D visual;
+    private readonly Texture2D visual;
 
-    public DevMath.Vector2 Position
-    {
-        get { return Circle.Position; }
-        set { Circle.Position = value; }
-    }
-
-    public DevMath.Circle Circle
-    {
-        get; private set;
-    }
-
-    public float Rotation
-    {
-        get; private set;
-    }
-
-    public Enemy(DevMath.Vector2 position)
-    {
+    public Enemy(Vector2 position) {
         visual = Resources.Load<Texture2D>("pacman");
 
-        Circle = new DevMath.Circle();
+        Circle = new Circle();
         Circle.Radius = visual.width * .5f;
 
         Position = position;
     }
 
-    public void Render()
-    {
+    public Vector2 Position {
+        get => Circle.Position;
+        set => Circle.Position = value;
+    }
+
+    public Circle Circle { get; }
+
+    public float Rotation { get; private set; }
+
+    public void Render() {
         GUIUtility.RotateAroundPivot(Rotation, Position.ToUnity());
 
         GUI.color = Color.red;
@@ -50,28 +39,24 @@ public class Enemy
         GUI.matrix = Matrix4x4.identity;
     }
 
-    public void Update(Player player)
-    {
+    public void Update(Player player) {
         var directionToPlayer = player.Position - Position;
-        float distanceToPlayer = directionToPlayer.Magnitude;
+        var distanceToPlayer = directionToPlayer.Magnitude;
 
-        if(distanceToPlayer < CHASE_DISTANCE)
-        {
-            float playerFacing = DevMath.Vector2.Dot(directionToPlayer.Normalized, player.Direction);
+        if (distanceToPlayer < CHASE_DISTANCE) {
+            var playerFacing = UnityEngine.Vector2.Dot(directionToPlayer.Normalized.ToUnity(), player.Direction.ToUnity());
 
-            DevMath.Vector2 moveDirection;
-            if(playerFacing > .0f)
-            {
+            Vector2 moveDirection;
+            if (playerFacing > .0f) {
                 moveDirection = directionToPlayer.Normalized;
             }
-            else
-            {
+            else {
                 moveDirection = -directionToPlayer.Normalized;
             }
 
             Position += moveDirection * moveSpeed * Time.deltaTime;
 
-            Rotation = DevMath.DevMath.RadToDeg(DevMath.Vector2.Angle(new DevMath.Vector2(.0f, .0f), moveDirection));
+            Rotation = DevMath.DevMath.RadToDeg(Vector2.Angle(new Vector2(.0f, .0f), moveDirection));
         }
     }
 }
